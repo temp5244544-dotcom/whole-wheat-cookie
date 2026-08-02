@@ -104,7 +104,7 @@ async def on_message(message):
         (message.embeds and "successful" in str(message.embeds[0].description).lower())
     )
     if is_discadia_success or content_lower.startswith("!bumped discadia"):
-        await message.channel.send("⏱️ **Discadia bump recorded!** Set timer for 1 hour.")
+        await message.channel.send("⏱️ **Discadia bump recorded!** Set timer for 24 hour.")
         task = asyncio.create_task(
             schedule_reminder(
                 message.channel, 
