@@ -1,6 +1,3 @@
-Here is the updated script with your new role ID (`1534242616022143097`) set on line 28:
-
-```python
 import os
 import asyncio
 import threading
@@ -122,7 +119,7 @@ async def on_message(message):
         (message.embeds and "successfully bumped" in str(message.embeds[0].description).lower())
     )
     if is_discadia_success or content_lower.startswith("!bumped discadia"):
-        await message.channel.send("⏱**Discadia bump recorded!** Set timer for 24 hours.")
+        await message.channel.send("**Discadia bump recorded!** Set timer for 24 hours.")
         task = asyncio.create_task(
             schedule_reminder(
                 message.channel, 
@@ -137,5 +134,3 @@ async def on_message(message):
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 bot.run(TOKEN)
-
-```
