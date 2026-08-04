@@ -5,7 +5,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import discord
 from discord.ext import commands
 
-# Simple web server to keep host alive (handles both GET and HEAD for UptimeRobot)
+# Simple web server to keep host alive (handles GET and HEAD for UptimeRobot)
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -18,7 +18,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-    # Silences logs so UptimeRobot pings don't flood your Render console
     def log_message(self, format, *args):
         return
 
@@ -114,10 +113,8 @@ async def on_message(message):
 
     # --- Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    is_discadia_success = is_discadia and (
-        "successfully bumped" in content_lower or
-        (message.embeds and "successfully bumped" in str(message.embeds[0].description).lower())
-    )
+    is_discadia_success = is_discadia and "successfully bumped" in content_lower
+
     if is_discadia_success or content_lower.startswith("!bumped discadia"):
         await message.channel.send("**Discadia bump recorded!** Set timer for 24 hours.")
         task = asyncio.create_task(
