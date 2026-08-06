@@ -61,6 +61,21 @@ def reset_timer(service_name, task):
         active_timers[service_name].cancel()
     active_timers[service_name] = task
 
+def extract_full_text(message: discord.Message) -> str:
+    """Helper function to collect all text from message content and embeds."""
+    text_list = [message.content or ""]
+    for embed in message.embeds:
+        if embed.title:
+            text_list.append(embed.title)
+        if embed.description:
+            text_list.append(embed.description)
+        for field in embed.fields:
+            if field.name:
+                text_list.append(field.name)
+            if field.value:
+                text_list.append(field.value)
+    return " ".join(text_list).lower()
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user.name}")
@@ -75,6 +90,7 @@ async def on_message(message):
         return
 
     content_lower = message.content.lower()
+    full_text = extract_full_text(message)
 
     # Cancel Commands
     if content_lower == "!bumpstop disboard" or content_lower == "!bumpstop all":
@@ -95,10 +111,8 @@ async def on_message(message):
 
     # --- Disboard Detection ---
     is_disboard = message.author.id == DISBOARD_BOT_ID
-    is_disboard_success = is_disboard and (
-        "bump done" in content_lower or 
-        (message.embeds and "bump done" in str(message.embeds[0].description).lower())
-    )
+    is_disboard_success = is_disboard and ("bump done" in full_text or "bump success" in full_text)
+
     if is_disboard_success or content_lower.startswith("!bumped disboard"):
         await message.channel.send("**Disboard bump recorded!** Set timer for 2 hours.")
         task = asyncio.create_task(
@@ -113,7 +127,7 @@ async def on_message(message):
 
     # --- Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    is_discadia_success = is_discadia and "successfully bumped" in content_lower
+    is_discadia_success = is_discadia and "successfully bumped" in full_text
 
     if is_discadia_success or content_lower.startswith("!bumped discadia"):
         await message.channel.send("**Discadia bump recorded!** Set timer for 24 hours.")
