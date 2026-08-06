@@ -28,7 +28,8 @@ def run_web_server():
 threading.Thread(target=run_web_server, daemon=True).start()
 
 # CONFIGURATION
-BUMP_CHANNEL_ID = 1532491739120795749
+BUMP_CHANNEL_ID = None  # None allows detection in all channels
+
 ROLE_TO_PING_ID = 1534242616022143097
 
 DISBOARD_BOT_ID = 302050872383242240
@@ -89,11 +90,32 @@ async def on_message(message):
         await bot.process_commands(message)
         return
 
-    content_lower = message.content.lower()
     full_text = extract_full_text(message)
+    content_lower = message.content.lower()
 
-    # Cancel Commands
-    if content_lower == "!bumpstop disboard" or content_lower == "!bumpstop all":
+    # Console debug log whenever Disboard or Discadia sends a message
+    if message.author.id in (DISBOARD_BOT_ID, DISCADIA_BOT_ID):
+        print(f"[DEBUG] Received message from {message.author.name} ({message.author.id}): '{full_text}'")
+
+    # --- Manual Override Commands ---
+    if content_lower in ("!bumped discadia", "!discadia"):
+        await message.channel.send("✅ **Discadia bump recorded manually!** Set timer for 24 hours.")
+        task = asyncio.create_task(
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "**Discadia is ready to bump!**")
+        )
+        reset_timer("discadia", task)
+        return
+
+    if content_lower in ("!bumped disboard", "!disboard"):
+        await message.channel.send("✅ **Disboard bump recorded manually!** Set timer for 2 hours.")
+        task = asyncio.create_task(
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "**Disboard is ready to bump!**")
+        )
+        reset_timer("disboard", task)
+        return
+
+    # --- Cancel Commands ---
+    if content_lower in ("!bumpstop disboard", "!bumpstop all"):
         if active_timers["disboard"] and not active_timers["disboard"].done():
             active_timers["disboard"].cancel()
             active_timers["disboard"] = None
@@ -101,7 +123,7 @@ async def on_message(message):
         else:
             await message.channel.send("No active Disboard timer running.")
 
-    if content_lower == "!bumpstop discadia" or content_lower == "!bumpstop all":
+    if content_lower in ("!bumpstop discadia", "!bumpstop all"):
         if active_timers["discadia"] and not active_timers["discadia"].done():
             active_timers["discadia"].cancel()
             active_timers["discadia"] = None
@@ -109,35 +131,25 @@ async def on_message(message):
         else:
             await message.channel.send("No active Discadia timer running.")
 
-    # --- Disboard Detection ---
+    # --- Automatic Disboard Detection ---
     is_disboard = message.author.id == DISBOARD_BOT_ID
     is_disboard_success = is_disboard and ("bump done" in full_text or "bump success" in full_text)
 
-    if is_disboard_success or content_lower.startswith("!bumped disboard"):
-        await message.channel.send("**Disboard bump recorded!** Set timer for 2 hours.")
+    if is_disboard_success:
+        await message.channel.send("**Disboard bump detected!** Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(
-                message.channel, 
-                "disboard", 
-                DISBOARD_COOLDOWN, 
-                "**Disboard is ready to bump!**"
-            )
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "**Disboard is ready to bump!**")
         )
         reset_timer("disboard", task)
 
-    # --- Discadia Detection ---
+    # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
     is_discadia_success = is_discadia and "successfully bumped" in full_text
 
-    if is_discadia_success or content_lower.startswith("!bumped discadia"):
-        await message.channel.send("**Discadia bump recorded!** Set timer for 24 hours.")
+    if is_discadia_success:
+        await message.channel.send("**Discadia bump detected!** Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(
-                message.channel, 
-                "discadia", 
-                DISCADIA_COOLDOWN, 
-                "**Discadia is ready to bump!**"
-            )
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "**Discadia is ready to bump!**")
         )
         reset_timer("discadia", task)
 
