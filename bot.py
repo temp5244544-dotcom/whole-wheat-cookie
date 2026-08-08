@@ -64,7 +64,7 @@ def reset_timer(service_name, task):
     active_timers[service_name] = task
 
 def extract_full_text(message: discord.Message) -> str:
-    """Helper function to collect all text from content, embeds, and interaction metadata."""
+    """Helper function to collect all text from content and embeds."""
     text_list = [message.content or ""]
     
     # Check Embeds
@@ -78,11 +78,6 @@ def extract_full_text(message: discord.Message) -> str:
                 text_list.append(field.name)
             if field.value:
                 text_list.append(field.value)
-
-    # Check Interaction Metadata (Slash Command replies)
-    if hasattr(message, 'interaction_metadata') and message.interaction_metadata:
-        if hasattr(message.interaction_metadata, 'name'):
-            text_list.append(message.interaction_metadata.name)
 
     return " ".join(text_list).lower()
 
@@ -100,6 +95,11 @@ async def on_message(message):
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
         await bot.process_commands(message)
+        return
+
+    # --- Quick Health Check ---
+    if content_lower == "!ping":
+        await message.channel.send("🏓 **Pong!** Bot is running.")
         return
 
     # --- Manual Override Commands ---
@@ -149,11 +149,17 @@ async def on_message(message):
 
     # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    # Fallback: Detect either text match OR slash command interaction from Discadia Bot ID
+    
+    # Safe check for interactions without attribute errors
+    has_interaction = (
+        (hasattr(message, 'interaction_metadata') and message.interaction_metadata is not None) or
+        (hasattr(message, 'interaction') and message.interaction is not None)
+    )
+
     is_discadia_success = is_discadia and (
         "has been successfully bumped" in full_text or 
         "bumped" in full_text or
-        (hasattr(message, 'interaction_metadata') and message.interaction_metadata and message.interaction_metadata.name == 'bump')
+        has_interaction
     )
 
     if is_discadia_success:
