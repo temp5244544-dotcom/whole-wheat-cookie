@@ -51,7 +51,7 @@ async def schedule_reminder(channel, service_name, seconds, ping_message):
     try:
         await asyncio.sleep(seconds)
         role_tag = get_role_mention()
-        await channel.send(f"🔔 {role_tag}{ping_message}")
+        await channel.send(f"{role_tag}{ping_message}")
     except asyncio.CancelledError:
         pass
     finally:
@@ -99,17 +99,17 @@ async def on_message(message):
 
     # --- Manual Override Commands ---
     if content_lower in ("!bumped discadia", "!discadia"):
-        await message.channel.send("✅ **Discadia bump recorded manually!** Set timer for 24 hours.")
+        await message.channel.send("Discadia bump recorded manually! Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "**Discadia is ready to bump!**")
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump @role")
         )
         reset_timer("discadia", task)
         return
 
     if content_lower in ("!bumped disboard", "!disboard"):
-        await message.channel.send("✅ **Disboard bump recorded manually!** Set timer for 2 hours.")
+        await message.channel.send("Disboard bump recorded manually! Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "**Disboard is ready to bump!**")
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump @role")
         )
         reset_timer("disboard", task)
         return
@@ -119,7 +119,7 @@ async def on_message(message):
         if active_timers["disboard"] and not active_timers["disboard"].done():
             active_timers["disboard"].cancel()
             active_timers["disboard"] = None
-            await message.channel.send("**Disboard timer stopped!**")
+            await message.channel.send("Disboard timer stopped.")
         else:
             await message.channel.send("No active Disboard timer running.")
 
@@ -127,7 +127,7 @@ async def on_message(message):
         if active_timers["discadia"] and not active_timers["discadia"].done():
             active_timers["discadia"].cancel()
             active_timers["discadia"] = None
-            await message.channel.send("**Discadia timer stopped!**")
+            await message.channel.send("Discadia timer stopped.")
         else:
             await message.channel.send("No active Discadia timer running.")
 
@@ -136,20 +136,20 @@ async def on_message(message):
     is_disboard_success = is_disboard and ("bump done" in full_text or "bump success" in full_text)
 
     if is_disboard_success:
-        await message.channel.send("**Disboard bump detected!** Set timer for 2 hours.")
+        await message.channel.send("Disboard bump detected! Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "**Disboard is ready to bump!**")
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump @role")
         )
         reset_timer("disboard", task)
 
     # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    is_discadia_success = is_discadia and "successfully bumped" in full_text
+    is_discadia_success = is_discadia and "has been successfully bumped" in full_text
 
     if is_discadia_success:
-        await message.channel.send("**Discadia bump detected!** Set timer for 24 hours.")
+        await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "**Discadia is ready to bump!**")
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump @role")
         )
         reset_timer("discadia", task)
 
