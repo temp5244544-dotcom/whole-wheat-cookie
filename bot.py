@@ -1,6 +1,7 @@
 import os
 import asyncio
 import threading
+import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import discord
 from discord.ext import commands
@@ -86,8 +87,9 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Log EVERY message
-    print(f"[ALL] From {message.author.name} in #{message.channel.name}: {message.content[:100]}")
+    # Debug to stderr
+    sys.stderr.write(f"[MSG] {message.author.name}: {message.content[:100]}\n")
+    sys.stderr.flush()
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
         await bot.process_commands(message)
@@ -145,7 +147,7 @@ async def on_message(message):
     if is_disboard_success:
         await message.channel.send("Disboard bump detected! Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump @role")
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump")
         )
         reset_timer("disboard", task)
 
@@ -156,7 +158,7 @@ async def on_message(message):
     if is_discadia_success:
         await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump @role")
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
         )
         reset_timer("discadia", task)
 
