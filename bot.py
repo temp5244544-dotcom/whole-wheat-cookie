@@ -138,7 +138,7 @@ async def on_message(message):
     if is_disboard_success:
         await message.channel.send("Disboard bump detected! Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump @role")
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump")
         )
         reset_timer("disboard", task)
 
@@ -149,7 +149,7 @@ async def on_message(message):
     if is_discadia_success:
         await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump @role")
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
         )
         reset_timer("discadia", task)
 
