@@ -150,17 +150,10 @@ async def on_message(message):
     # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
     
-    # Safe check for interactions without attribute errors
-    has_interaction = (
-        (hasattr(message, 'interaction_metadata') and message.interaction_metadata is not None) or
-        (hasattr(message, 'interaction') and message.interaction is not None)
-    )
+    is_failed_bump = "already bumped" in full_text or "please try again" in full_text
+    is_success_phrase = "successfully bumped" in full_text or "bumped" in full_text
 
-    is_discadia_success = is_discadia and (
-        "has been successfully bumped" in full_text or 
-        "bumped" in full_text or
-        has_interaction
-    )
+    is_discadia_success = is_discadia and is_success_phrase and not is_failed_bump
 
     if is_discadia_success:
         await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
