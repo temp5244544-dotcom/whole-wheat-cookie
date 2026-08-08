@@ -88,11 +88,12 @@ async def on_message(message):
         return
 
     # Debug to stderr
-    sys.stderr.write(f"[MSG] {message.author.name}: {message.content[:100]}\n")
-    if message.embeds:
-        sys.stderr.write(f"[EMBEDS] {len(message.embeds)} embeds\n")
+    sys.stderr.write(f"[MSG] {message.author.name}: content='{message.content}' len={len(message.content)}\n")
+    if message.author.id == DISCADIA_BOT_ID:
+        sys.stderr.write(f"[DISCADIA RAW] {repr(message.content)}\n")
+        sys.stderr.write(f"[DISCADIA EMBEDS] count={len(message.embeds)}\n")
         for i, embed in enumerate(message.embeds):
-            sys.stderr.write(f"  [{i}] title='{embed.title}', desc='{embed.description[:100] if embed.description else 'None'}'\n")
+            sys.stderr.write(f"  Embed {i}: title={repr(embed.title)}, desc={repr(embed.description[:100] if embed.description else None)}\n")
     sys.stderr.flush()
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
