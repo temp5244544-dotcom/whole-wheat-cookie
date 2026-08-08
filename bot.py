@@ -101,6 +101,11 @@ async def on_message(message):
 
     full_text = extract_full_text(message)
     content_lower = message.content.lower()
+    
+    # Debug full_text after extraction
+    if message.author.id == DISCADIA_BOT_ID:
+        sys.stderr.write(f"[FULL_TEXT] '{full_text}'\n")
+        sys.stderr.flush()
 
     # Console debug log whenever Disboard or Discadia sends a message
     if message.author.id in (DISBOARD_BOT_ID, DISCADIA_BOT_ID):
