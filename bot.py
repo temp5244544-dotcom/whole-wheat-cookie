@@ -85,6 +85,14 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         return
+        
+    print(f"[ALL] {message.author.name}: {message.content[:50]}")
+
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
         await bot.process_commands(message)
