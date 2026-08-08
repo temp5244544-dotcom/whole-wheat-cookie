@@ -64,8 +64,10 @@ def reset_timer(service_name, task):
     active_timers[service_name] = task
 
 def extract_full_text(message: discord.Message) -> str:
-    """Helper function to collect all text from message content and embeds."""
+    """Helper function to collect all text from content, embeds, and interaction metadata."""
     text_list = [message.content or ""]
+    
+    # Check Embeds
     for embed in message.embeds:
         if embed.title:
             text_list.append(embed.title)
@@ -76,6 +78,12 @@ def extract_full_text(message: discord.Message) -> str:
                 text_list.append(field.name)
             if field.value:
                 text_list.append(field.value)
+
+    # Check Interaction Metadata (Slash Command replies)
+    if hasattr(message, 'interaction_metadata') and message.interaction_metadata:
+        if hasattr(message.interaction_metadata, 'name'):
+            text_list.append(message.interaction_metadata.name)
+
     return " ".join(text_list).lower()
 
 @bot.event
@@ -87,34 +95,12 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Debug to stderr
-    sys.stderr.write(f"[MSG] {message.author.name}: content='{message.content}' len={len(message.content)}\n")
-    if message.author.id == DISCADIA_BOT_ID:
-        sys.stderr.write(f"[DISCADIA RAW] {repr(message.content)}\n")
-        sys.stderr.write(f"[DISCADIA EMBEDS] count={len(message.embeds)}\n")
-        for i, embed in enumerate(message.embeds):
-            sys.stderr.write(f"  Embed {i}: title={repr(embed.title)}, desc={repr(embed.description[:100] if embed.description else None)}\n")
-    sys.stderr.flush()
+    content_lower = message.content.lower().strip()
+    full_text = extract_full_text(message)
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
         await bot.process_commands(message)
         return
-
-    full_text = extract_full_text(message)
-    content_lower = message.content.lower()
-    
-    # Debug full_text after extraction
-    if message.author.id == DISCADIA_BOT_ID:
-        sys.stderr.write(f"[FULL_TEXT] '{full_text}'\n")
-        sys.stderr.flush()
-
-    # Console debug log whenever Disboard or Discadia sends a message
-    if message.author.id in (DISBOARD_BOT_ID, DISCADIA_BOT_ID):
-        print(f"[DEBUG] Received message from {message.author.name} ({message.author.id}): '{full_text}'")
-        if message.author.id == DISCADIA_BOT_ID:
-            print(f"[DISCADIA EMBEDS] {len(message.embeds)} embeds")
-            for i, embed in enumerate(message.embeds):
-                print(f"  Embed {i}: title='{embed.title}', desc='{embed.description}'")
 
     # --- Manual Override Commands ---
     if content_lower in ("!bumped discadia", "!discadia"):
@@ -163,7 +149,12 @@ async def on_message(message):
 
     # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    is_discadia_success = is_discadia and "has been successfully bumped" in full_text
+    # Fallback: Detect either text match OR slash command interaction from Discadia Bot ID
+    is_discadia_success = is_discadia and (
+        "has been successfully bumped" in full_text or 
+        "bumped" in full_text or
+        (hasattr(message, 'interaction_metadata') and message.interaction_metadata and message.interaction_metadata.name == 'bump')
+    )
 
     if is_discadia_success:
         await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
