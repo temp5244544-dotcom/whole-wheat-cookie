@@ -141,6 +141,7 @@ async def on_message(message):
             await message.channel.send("Stopped Disboard timer.")
         else:
             await message.channel.send("No active Disboard timer running.")
+        return
 
     if content_lower in ("!bumpstop discadia", "!bumpstop all"):
         if active_timers["discadia"] and not active_timers["discadia"].done():
@@ -149,28 +150,45 @@ async def on_message(message):
             await message.channel.send("Stopped Discadia timer.")
         else:
             await message.channel.send("No active Discadia timer running.")
+        return
 
     # --- Automatic Disboard Detection ---
     is_disboard = message.author.id == DISBOARD_BOT_ID
     is_disboard_success = is_disboard and ("bump done" in full_text or "bump success" in full_text)
 
     if is_disboard_success:
-        await message.channel.send("Disboard bump detected! Set timer for 2 hours.")
-        task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump")
-        )
-        reset_timer("disboard", task)
+        if active_timers["disboard"] and not active_timers["disboard"].done():
+            await message.channel.send("Disboard timer is already running.")
+        else:
+            await message.channel.send("Disboard bump detected! Set timer for 2 hours.")
+            task = asyncio.create_task(
+                schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump")
+            )
+            reset_timer("disboard", task)
 
     # --- Automatic Discadia Detection ---
     is_discadia = message.author.id == DISCADIA_BOT_ID
-    is_discadia_success = is_discadia and "has been successfully bumped" in full_text
+    
+    # Check for interaction metadata (how Discadia bump is detected)
+    has_interaction = (
+        hasattr(message, 'interaction_metadata') and message.interaction_metadata is not None
+    )
+
+    is_discadia_success = is_discadia and (
+        "has been successfully bumped" in full_text or 
+        "bumped" in full_text or
+        has_interaction
+    )
 
     if is_discadia_success:
-        await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
-        task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
-        )
-        reset_timer("discadia", task)
+        if active_timers["discadia"] and not active_timers["discadia"].done():
+            await message.channel.send("Discadia timer is already running.")
+        else:
+            await message.channel.send("Discadia bump detected! Set timer for 24 hours.")
+            task = asyncio.create_task(
+                schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
+            )
+            reset_timer("discadia", task)
 
     await bot.process_commands(message)
 
