@@ -101,7 +101,7 @@ async def on_message(message):
     if content_lower in ("!bumped discadia", "!discadia"):
         await message.channel.send("Discadia bump recorded manually! Set timer for 24 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump @role")
+            schedule_reminder(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
         )
         reset_timer("discadia", task)
         return
@@ -109,7 +109,7 @@ async def on_message(message):
     if content_lower in ("!bumped disboard", "!disboard"):
         await message.channel.send("Disboard bump recorded manually! Set timer for 2 hours.")
         task = asyncio.create_task(
-            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump @role")
+            schedule_reminder(message.channel, "disboard", DISBOARD_COOLDOWN, "Disboard is ready to bump")
         )
         reset_timer("disboard", task)
         return
