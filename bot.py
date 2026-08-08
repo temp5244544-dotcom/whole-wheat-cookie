@@ -89,6 +89,10 @@ async def on_message(message):
 
     # Debug to stderr
     sys.stderr.write(f"[MSG] {message.author.name}: {message.content[:100]}\n")
+    if message.embeds:
+        sys.stderr.write(f"[EMBEDS] {len(message.embeds)} embeds\n")
+        for i, embed in enumerate(message.embeds):
+            sys.stderr.write(f"  [{i}] title='{embed.title}', desc='{embed.description[:100] if embed.description else 'None'}'\n")
     sys.stderr.flush()
 
     if BUMP_CHANNEL_ID and message.channel.id != BUMP_CHANNEL_ID:
