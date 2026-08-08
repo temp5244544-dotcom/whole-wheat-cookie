@@ -28,9 +28,9 @@ def run_web_server():
 threading.Thread(target=run_web_server, daemon=True).start()
 
 # CONFIGURATION
-BUMP_CHANNEL_ID = None  # None allows detection in all channels
+BUMP_CHANNEL_ID = None
 
-ROLE_TO_PING_ID = 1534242616022143097
+ROLE_TO_PING_ID = 1533479070136795329
 
 DISBOARD_BOT_ID = 302050872383242240
 DISCADIA_BOT_ID = 1222548162741538938
