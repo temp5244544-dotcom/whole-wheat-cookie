@@ -58,9 +58,12 @@ def format_time_left(service_name):
         return "any moment now"
     hours = seconds_left // 3600
     minutes = (seconds_left % 3600) // 60
+    seconds = seconds_left % 60
     if hours > 0:
-        return f"{hours}h {minutes}m"
-    return f"{minutes}m"
+        return f"{hours}h {minutes}m {seconds}s"
+    elif minutes > 0:
+        return f"{minutes}m {seconds}s"
+    return f"{seconds}s"
 
 def is_timer_running(service_name):
     return active_timers[service_name] and not active_timers[service_name].done()
