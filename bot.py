@@ -122,7 +122,7 @@ async def on_message(message):
             await message.channel.send(f"Discadia timer is already running. {format_time_left('discadia')} left.")
         else:
             await message.channel.send("Discadia bump recorded! Timer set for 24 hours.")
-            start_timer(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump")
+            start_timer(message.channel, "discadia", DISCADIA_COOLDOWN, "Discadia is ready to bump (Remember to [vote for Vis Regnorum on Discadia](https://discadia.com/vote/Regnorum) )")
         return
 
     if content_lower in ("!bumped disboard", "!disboard"):
